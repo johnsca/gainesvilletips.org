@@ -92,6 +92,22 @@
     {{ '<!-' + '-' }} -->
   </body>
   <script type="text/javascript">
+    function link(url, text) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.appendChild(document.createTextNode(text));
+      return a;
+    }
+    function img_link(url, img_url) {
+      var a = document.createElement('a');
+      var img = document.createElement('img');
+      a.href = url;
+      img.src = img_url;
+      img.width = '88';
+      img.height = '88';
+      a.appendChild(img);
+      return a;
+    }
     var PHOTO = 0;
     var THUMBNAIL = 1;
     var NAME = 2;
@@ -155,14 +171,25 @@
         var second = document.importNode(template.content.querySelector('.second'), true);
         var third = document.importNode(template.content.querySelector('.third'), true);
         if(row[PHOTO] && row[THUMBNAIL]) {
-          first.querySelector('.photo').innerHTML = '<a href="' + row[PHOTO] + '"><img src="' + row[THUMBNAIL] + '" /></a>';
+          first.querySelector('.photo').appendChild(img_link(row[PHOTO], row[THUMBNAIL]));
         }
-        first.querySelector('.name').innerHTML = row[NAME];
-        first.querySelector('.venue').innerHTML = row[VENUE];
-        first.querySelector('.position').innerHTML = row[POSITION];
-        first.querySelector('.cash-app').innerHTML = row[CASH_APP];
-        second.querySelector('.venmo').innerHTML = row[VENMO];
-        third.querySelector('.paypal').innerHTML = row[PAYPAL];
+        first.querySelector('.name').innerText = row[NAME];
+        first.querySelector('.venue').innerText = row[VENUE];
+        first.querySelector('.position').innerText = row[POSITION];
+        if(row[CASH_APP]) {
+          first.querySelector('.cash-app').appendChild(link('https://cash.app/' + row[CASH_APP], row[CASH_APP]));
+        }
+        if(row[VENMO]) {
+          second.querySelector('.venmo').appendChild(link('https://venmo.com/' + row[VENMO].replace('@', ''), row[VENMO]));
+        }
+        if(row[PAYPAL]) {
+          if(row[PAYPAL].startsWith('https://')) {
+            third.querySelector('.paypal').appendChild(link(row[PAYPAL], row[PAYPAL]));
+          } else if (row[PAYPAL].indexOf('@') >= 0) {
+            var email_url = 'https://www.paypal.com/myaccount/transfer/homepage/external/summary?recipient=';
+            third.querySelector('.paypal').appendChild(link(email_url + row[PAYPAL], row[PAYPAL]));
+          }
+        }
         dest.appendChild(first);
         dest.appendChild(second);
         dest.appendChild(third);
