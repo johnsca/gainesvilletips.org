@@ -19,6 +19,11 @@
         border: 1px solid black;
         padding: 0.5em 1em;
       }
+      td.photo {
+        padding: 1px;
+        width: 88px;
+        height: 88px;
+      }
     </style>
     <template id="server-template">
       <tr class="first">
@@ -87,18 +92,27 @@
     {{ '<!-' + '-' }} -->
   </body>
   <script type="text/javascript">
+    var PHOTO = 0;
+    var THUMBNAIL = 1;
+    var NAME = 2;
+    var VENUE = 3;
+    var POSITION = 4;
+    var CASH_APP = 5;
+    var VENMO = 6;
+    var PAYPAL = 7;
     var template = document.querySelector('#server-template');
     var results_table = document.querySelector('#results');
     var random_table = document.querySelector('#random');
     var search_results = [
       /* {# */
-      ["[photo]", "Bob Belcher", "Bob's Burgers", "Cook", "$bob", "@bob", "bob"],
-      ["[photo]", "Joe", "Joe's Crabshack", "$joe", "Cook", "@joe", "joe"],
+      ["https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png", "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png", "Bob Belcher", "Bob's Burgers", "Cook", "$bob", "@bob", "bob"],
+      ["", "", "Joe", "Joe's Crabshack", "Cook", "$joe", "@joe", "joe"],
       /* #} */
       /* {{ '*' + '/' }}
       {% for row in search_results %}
       [
-        "[photo]",
+        {{ row[PHOTO]|default("")|tojson }},
+        {{ row[THUMBNAIL]|default("")|tojson }},
         {{ row[NAME]|default("")|tojson }},
         {{ row[VENUE]|default("")|tojson }},
         {{ row[POSITION]|default("")|tojson }},
@@ -111,15 +125,16 @@
     ];
     var random_results = [
       /* {# */
-      ["[photo]", "Scooby Doo", "The Van", "Cook", "$scooby", "@scooby", "scooby"],
-      ["[photo]", "Kevin", "Satchel's", "Promoter", "$kevin", "@kevin", "kevin"],
-      ["[photo]", "Harry Dresden", "McAnally's Pub", "Security", "$harry", "@harry", "harry"],
-      ["[photo]", "Spongebob Squarepants", "Krusty Krab", "Cook", "$sponge", "@sponge", "sponge"]
+      ["", "", "Scooby Doo", "The Van", "Cook", "$scooby", "@scooby", "scooby"],
+      ["", "", "Kevin", "Satchel's", "Promoter", "$kevin", "@kevin", "kevin"],
+      ["", "", "Harry Dresden", "McAnally's Pub", "Security", "$harry", "@harry", "harry"],
+      ["", "", "Spongebob Squarepants", "Krusty Krab", "Cook", "$sponge", "@sponge", "sponge"]
       /* #} */
       /* {{ '*' + '/' }}
       {% for row in random_results %}
       [
-        "[photo]",
+        {{ row[PHOTO]|default("")|tojson }},
+        {{ row[THUMBNAIL]|default("")|tojson }},
         {{ row[NAME]|default("")|tojson }},
         {{ row[VENUE]|default("")|tojson }},
         {{ row[POSITION]|default("")|tojson }},
@@ -139,13 +154,15 @@
         var first = document.importNode(template.content.querySelector('.first'), true);
         var second = document.importNode(template.content.querySelector('.second'), true);
         var third = document.importNode(template.content.querySelector('.third'), true);
-        first.querySelector('.photo').innerHTML = row[0];
-        first.querySelector('.name').innerHTML = row[1];
-        first.querySelector('.venue').innerHTML = row[2];
-        first.querySelector('.position').innerHTML = row[3];
-        first.querySelector('.cash-app').innerHTML = row[4];
-        second.querySelector('.venmo').innerHTML = row[5];
-        third.querySelector('.paypal').innerHTML = row[6];
+        if(row[PHOTO] && row[THUMBNAIL]) {
+          first.querySelector('.photo').innerHTML = '<a href="' + row[PHOTO] + '"><img src="' + row[THUMBNAIL] + '" /></a>';
+        }
+        first.querySelector('.name').innerHTML = row[NAME];
+        first.querySelector('.venue').innerHTML = row[VENUE];
+        first.querySelector('.position').innerHTML = row[POSITION];
+        first.querySelector('.cash-app').innerHTML = row[CASH_APP];
+        second.querySelector('.venmo').innerHTML = row[VENMO];
+        third.querySelector('.paypal').innerHTML = row[PAYPAL];
         dest.appendChild(first);
         dest.appendChild(second);
         dest.appendChild(third);

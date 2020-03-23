@@ -25,8 +25,8 @@ POSITION = 4
 CASH_APP = 5
 VENMO = 6
 PAYPAL = 7
-MESSAGE = 8
-PHOTO = 9
+PHOTO = 8
+THUMBNAIL = 9
 
 
 def _load_data():
@@ -76,8 +76,8 @@ def serve(event, context):
                 'CASH_APP': CASH_APP,
                 'VENMO': VENMO,
                 'PAYPAL': PAYPAL,
-                'MESSAGE': MESSAGE,
                 'PHOTO': PHOTO,
+                'THUMBNAIL': THUMBNAIL,
             }),
         }
 
