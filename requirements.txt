@@ -1,0 +1,24 @@
+-i https://pypi.org/simple
+cachetools==4.0.0
+certifi==2019.11.28
+chardet==3.0.4
+fuzzywuzzy==0.18.0
+google-api-core==1.16.0
+google-api-python-client==1.8.0
+google-auth-httplib2==0.0.3
+google-auth==1.11.3
+googleapis-common-protos==1.51.0
+httplib2==0.17.0
+idna==2.9
+jinja2==2.11.1
+markupsafe==1.1.1
+protobuf==3.11.3
+pyasn1-modules==0.2.8
+pyasn1==0.4.8
+python-levenshtein==0.12.0
+pytz==2019.3
+requests==2.23.0
+rsa==4.0
+six==1.14.0
+uritemplate==3.0.1
+urllib3==1.25.8

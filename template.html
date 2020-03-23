@@ -1,0 +1,155 @@
+<html>
+  <head>
+    <style type="text/css">
+      body {
+        padding-top: 1em;
+        width: fit-content;
+        margin: auto;
+        text-align: center;
+      }
+      label {
+        font-weight: bold;
+        font-size: 36px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td, th {
+        border: 1px solid black;
+        padding: 0.5em 1em;
+      }
+    </style>
+    <template id="server-template">
+      <tr class="first">
+        <td class="photo" rowspan="3"></td>
+        <td class="name" rowspan="3"></td>
+        <td class="venue" rowspan="3"></td>
+        <td class="position" rowspan="3"></td>
+        <th>Cash App</th>
+        <td class="cash-app"></td>
+      </tr>
+      <tr class="second">
+        <th>Venmo</th>
+        <td class="venmo"></td>
+      </tr>
+      <tr class="third">
+        <th>PayPal</th>
+        <td class="paypal"></td>
+      </tr>
+    </template>
+  </head>
+  <body>
+    <form method="GET">
+      <label for="search">Search by server name or establishment:</label>
+      <!-- {{ '-' + '->' }}
+      <input type="text" name="search" value="{{ search }}" />
+      {{ '<!-' + '-' }} -->
+      <!-- {# -->
+      <input type="text" name="search" value="" />
+      <!-- #} -->
+      <input type="submit" value="Search" />
+    </form>
+    <hr />
+    <!-- {{ '-' + '->' }}
+    {% if search and not search_results %}
+    <h2>We're sorry, but we weren't able to find who you were looking for.</h2>
+    {% elif search and search_results %}
+    {{ '<!-' + '-' }} -->
+    <h2>These are the fine folks we found who matched your search.</h2>
+    <table id="results">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Establishment</th>
+          <th>Position</th>
+          <th colspan="2">Payment</th>
+      </thead>
+    </table>
+    <!-- {{ '-' + '->' }}
+    {% endif %}
+    {% if random_results %}
+    {{ '<!-' + '-' }} -->
+    <h2>Here are some <!-- {{ '-' + '->' }} {% if search_results %}additional{% endif %} {{ '<!-' + '-' }} --> random servers that you can donate to.  <a href="">Refresh</a> or search to see other servers.</h2>
+    <table id="random">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Establishment</th>
+          <th>Position</th>
+          <th colspan="2">Payment</th>
+      </thead>
+    </table>
+    <!-- {{ '-' + '->' }}
+    {% endif %}
+    {{ '<!-' + '-' }} -->
+  </body>
+  <script type="text/javascript">
+    var template = document.querySelector('#server-template');
+    var results_table = document.querySelector('#results');
+    var random_table = document.querySelector('#random');
+    var search_results = [
+      /* {# */
+      ["[photo]", "Bob Belcher", "Bob's Burgers", "Cook", "$bob", "@bob", "bob"],
+      ["[photo]", "Joe", "Joe's Crabshack", "$joe", "Cook", "@joe", "joe"],
+      /* #} */
+      /* {{ '*' + '/' }}
+      {% for row in search_results %}
+      [
+        "[photo]",
+        {{ row[NAME]|default("")|tojson }},
+        {{ row[VENUE]|default("")|tojson }},
+        {{ row[POSITION]|default("")|tojson }},
+        {{ row[CASH_APP]|default("")|tojson }},
+        {{ row[VENMO]|default("")|tojson }},
+        {{ row[PAYPAL]|default("")|tojson }}
+      ]{% if not loop.last %},{% endif %}
+      {% endfor %}
+      {{ '/' + '*' }} */
+    ];
+    var random_results = [
+      /* {# */
+      ["[photo]", "Scooby Doo", "The Van", "Cook", "$scooby", "@scooby", "scooby"],
+      ["[photo]", "Kevin", "Satchel's", "Promoter", "$kevin", "@kevin", "kevin"],
+      ["[photo]", "Harry Dresden", "McAnally's Pub", "Security", "$harry", "@harry", "harry"],
+      ["[photo]", "Spongebob Squarepants", "Krusty Krab", "Cook", "$sponge", "@sponge", "sponge"]
+      /* #} */
+      /* {{ '*' + '/' }}
+      {% for row in random_results %}
+      [
+        "[photo]",
+        {{ row[NAME]|default("")|tojson }},
+        {{ row[VENUE]|default("")|tojson }},
+        {{ row[POSITION]|default("")|tojson }},
+        {{ row[CASH_APP]|default("")|tojson }},
+        {{ row[VENMO]|default("")|tojson }},
+        {{ row[PAYPAL]|default("")|tojson }}
+      ]{% if not loop.last %},{% endif %}
+      {% endfor %}
+      {{ '/' + '*' }} */
+    ];
+    var datasets = [[results_table, search_results], [random_table, random_results]];
+    for(var i=0; i<datasets.length; i++) {
+      var dest = datasets[i][0];
+      var data = datasets[i][1];
+      for(var j=0; j<data.length; j++) {
+        var row = data[j];
+        var first = document.importNode(template.content.querySelector('.first'), true);
+        var second = document.importNode(template.content.querySelector('.second'), true);
+        var third = document.importNode(template.content.querySelector('.third'), true);
+        first.querySelector('.photo').innerHTML = row[0];
+        first.querySelector('.name').innerHTML = row[1];
+        first.querySelector('.venue').innerHTML = row[2];
+        first.querySelector('.position').innerHTML = row[3];
+        first.querySelector('.cash-app').innerHTML = row[4];
+        second.querySelector('.venmo').innerHTML = row[5];
+        third.querySelector('.paypal').innerHTML = row[6];
+        dest.appendChild(first);
+        dest.appendChild(second);
+        dest.appendChild(third);
+      }
+    }
+  </script>
+</html>
