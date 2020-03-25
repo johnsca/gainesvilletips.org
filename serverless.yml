@@ -4,34 +4,20 @@ provider:
   name: aws
   runtime: python3.8
 
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.py
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
-
 functions:
   webapi:
-    handler: gainesvilletips_org.serve
+    handler: wsgi.handler
     events:
-      - http:
-          path: /
-          method: get
+      - http: ANY /
+      - http: 'ANY {proxy+}'
 
 plugins:
   - serverless-python-requirements
+  - serverless-wsgi
 
 custom:
+  wsgi:
+    app: gainesvilletips_org.app
+    packRequirements: false
   pythonRequirements:
     dockerizePip: non-linux

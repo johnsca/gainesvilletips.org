@@ -10,6 +10,7 @@ google-api-python-client = "*"
 jinja2 = "*"
 fuzzywuzzy = "*"
 python-levenshtein = "*"
+flask = "*"
 
 [requires]
 python_version = "3.6"

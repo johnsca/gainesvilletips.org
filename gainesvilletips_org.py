@@ -1,11 +1,14 @@
 import pickle
 import random
 from pathlib import Path
-from traceback import format_exc
 
+from flask import Flask, render_template, request
 from fuzzywuzzy import process
 from googleapiclient.discovery import build
-from jinja2 import Template
+from jinja2 import Markup
+
+
+app = Flask(__name__)
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -42,51 +45,40 @@ def _load_data():
     return result.get('values', [])
 
 
-def serve(event, context):
-    try:
-        template = Template(Path('template.html').read_text())
-        params = event.get("queryStringParameters") or {}
+@app.route('/', methods=['GET'])
+def index():
+    data = _load_data()
 
-        data = _load_data()
+    if 'search' in request.args:
+        search_results = process.extract(request.args['search'], data,
+                                         limit=None)
+        search_results = [row for row, score in search_results
+                          if score >= 60]
+    else:
+        search_results = []
+    remaining = [item for item in data if item not in search_results]
+    random_results = random.sample(remaining, min(4, len(remaining)))
 
-        if 'search' in params:
-            search_results = process.extract(params['search'], data,
-                                             limit=None)
-            search_results = [row for row, score in search_results
-                              if score >= 60]
-        else:
-            search_results = []
-        remaining = [item for item in data if item not in search_results]
-        random_results = random.sample(remaining, min(4, len(remaining)))
+    return render_template('index.html', **{
+        'search_results': search_results,
+        'random_results': random_results,
+        'search': request.args.get('search', ''),
+        'TIMESTAMP': TIMESTAMP,
+        'NAME': NAME,
+        'EMAIL': EMAIL,
+        'VENUE': VENUE,
+        'POSITION': POSITION,
+        'CASH_APP': CASH_APP,
+        'VENMO': VENMO,
+        'PAYPAL': PAYPAL,
+        'PHOTO': PHOTO,
+        'THUMBNAIL': THUMBNAIL,
 
-        response = {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'text/html',
-            },
-            'body': template.render({
-                'search_results': search_results,
-                'random_results': random_results,
-                'search': params.get('search', ''),
-                'TIMESTAMP': TIMESTAMP,
-                'NAME': NAME,
-                'EMAIL': EMAIL,
-                'VENUE': VENUE,
-                'POSITION': POSITION,
-                'CASH_APP': CASH_APP,
-                'VENMO': VENMO,
-                'PAYPAL': PAYPAL,
-                'PHOTO': PHOTO,
-                'THUMBNAIL': THUMBNAIL,
-            }),
-        }
-
-        return response
-    except Exception:
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'text/plain',
-            },
-            'body': format_exc(),
-        }
+        # These are used to allow opening the template directly as HTML for
+        # style editing with placeholder data but also do the right thing when
+        # the template is rendered.
+        'html_comment': Markup('<!--'),
+        'html_comment_end': Markup('-->'),
+        'js_comment': Markup('/*'),
+        'js_comment_end': Markup('*/'),
+    })
