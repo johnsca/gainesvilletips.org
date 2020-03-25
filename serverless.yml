@@ -23,7 +23,7 @@ provider:
 
 functions:
   webapi:
-    handler: webapi.serve
+    handler: gainesvilletips_org.serve
     events:
       - http:
           path: /
