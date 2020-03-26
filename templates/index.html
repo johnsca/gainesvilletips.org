@@ -110,59 +110,72 @@
       a.appendChild(img);
       return a;
     }
-    var PHOTO = 0;
-    var THUMBNAIL = 1;
-    var NAME = 2;
-    var VENUE = 3;
-    var POSITION = 4;
-    var CASH_APP = 5;
-    var VENMO = 6;
-    var PAYPAL = 7;
     var template = document.querySelector('#server-template');
     var results_table = document.querySelector('#results');
     var random_table = document.querySelector('#random');
-    var search_results = [
-      /* {# */
-      ["https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png", "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png", "Bob Belcher", "Bob's Burgers", "Cook", "$bob", "@bob", "bob"],
-      ["", "", "Joe", "Joe's Crabshack", "Cook", "$joe", "@joe", "joe"],
+    var search_results = /* {{ js_comment_end }} {{ search_results|tojson }} {{ js_comment }} {# */ [
+      {
+        "photo":     "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png",
+        "thumbnail": "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png",
+        "name":      "Bob Belcher",
+        "venue":     "Bob's Burgers",
+        "position":  "Cook",
+        "cash_app":  "$bob",
+        "venmo":     "@bob",
+        "paypal":    "bob"
+      },
+      {
+        "photo": "",
+        "thumbnail": "",
+        "name": "Joe",
+        "venue": "Joe's Crabshack",
+        "position": "Cook",
+        "cash_app": "$joe",
+        "venmo": "@joe",
+        "paypal": "joe"
+      }]; /* #} */
+    var random_results = /* {{ js_comment_end }} {{ random_results|tojson }} {{ js_comment }} {# */ [
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Scooby Doo",
+        "venue":     "The Van",
+        "position":  "Cook",
+        "cash_app":  "$scooby",
+        "venmo":     "@scooby",
+        "paypal":    "scooby"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Kevin",
+        "venue":     "Satchel's",
+        "position":  "Promoter",
+        "cash_app":  "$kevin",
+        "venmo":     "@kevin",
+        "paypal":    "kevin"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Harry Dresden",
+        "venue":     "McAnally's Pub",
+        "position":  "Security",
+        "cash_app":  "$harry",
+        "venmo":     "@harry",
+        "paypal":    "harry"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Spongebob Squarepants",
+        "venue":     "Krusty Krab",
+        "position":  "Cook",
+        "cash_app":  "$sponge",
+        "venmo":     "@sponge",
+        "paypal":    "sponge"
+      }];
       /* #} */
-      /* {{ '*' + '/' }}
-      {% for row in search_results %}
-      [
-        {{ row[PHOTO]|default("")|tojson }},
-        {{ row[THUMBNAIL]|default("")|tojson }},
-        {{ row[NAME]|default("")|tojson }},
-        {{ row[VENUE]|default("")|tojson }},
-        {{ row[POSITION]|default("")|tojson }},
-        {{ row[CASH_APP]|default("")|tojson }},
-        {{ row[VENMO]|default("")|tojson }},
-        {{ row[PAYPAL]|default("")|tojson }}
-      ]{% if not loop.last %},{% endif %}
-      {% endfor %}
-      {{ '/' + '*' }} */
-    ];
-    var random_results = [
-      /* {# */
-      ["", "", "Scooby Doo", "The Van", "Cook", "$scooby", "@scooby", "scooby"],
-      ["", "", "Kevin", "Satchel's", "Promoter", "$kevin", "@kevin", "kevin"],
-      ["", "", "Harry Dresden", "McAnally's Pub", "Security", "$harry", "@harry", "harry"],
-      ["", "", "Spongebob Squarepants", "Krusty Krab", "Cook", "$sponge", "@sponge", "sponge"]
-      /* #} */
-      /* {{ js_comment_end }}
-      {% for row in random_results %}
-      [
-        {{ row[PHOTO]|default("")|tojson }},
-        {{ row[THUMBNAIL]|default("")|tojson }},
-        {{ row[NAME]|default("")|tojson }},
-        {{ row[VENUE]|default("")|tojson }},
-        {{ row[POSITION]|default("")|tojson }},
-        {{ row[CASH_APP]|default("")|tojson }},
-        {{ row[VENMO]|default("")|tojson }},
-        {{ row[PAYPAL]|default("")|tojson }}
-      ]{% if not loop.last %},{% endif %}
-      {% endfor %}
-      {{ js_comment }} */
-    ];
     var datasets = [[results_table, search_results], [random_table, random_results]];
     for(var i=0; i<datasets.length; i++) {
       var dest = datasets[i][0];
@@ -172,24 +185,24 @@
         var first = document.importNode(template.content.querySelector('.first'), true);
         var second = document.importNode(template.content.querySelector('.second'), true);
         var third = document.importNode(template.content.querySelector('.third'), true);
-        if(row[PHOTO] && row[THUMBNAIL]) {
-          first.querySelector('.photo').appendChild(img_link(row[PHOTO], row[THUMBNAIL]));
+        if(row["photo"] && row["thumbnail"]) {
+          first.querySelector('.photo').appendChild(img_link(row["photo"], row["thumbnail"]));
         }
-        first.querySelector('.name').innerText = row[NAME];
-        first.querySelector('.venue').innerText = row[VENUE];
-        first.querySelector('.position').innerText = row[POSITION];
-        if(row[CASH_APP]) {
-          first.querySelector('.cash-app').appendChild(link('https://cash.app/' + row[CASH_APP], row[CASH_APP]));
+        first.querySelector('.name').innerText = row["name"];
+        first.querySelector('.venue').innerText = row["venue"];
+        first.querySelector('.position').innerText = row["position"];
+        if(row["cash_app"]) {
+          first.querySelector('.cash-app').appendChild(link('https://cash.app/' + row["cash_app"], row["cash_app"]));
         }
-        if(row[VENMO]) {
-          second.querySelector('.venmo').appendChild(link('https://venmo.com/' + row[VENMO].replace('@', ''), row[VENMO]));
+        if(row["venmo"]) {
+          second.querySelector('.venmo').appendChild(link('https://venmo.com/' + row["venmo"].replace('@', ''), row["venmo"]));
         }
-        if(row[PAYPAL]) {
-          if(row[PAYPAL].startsWith('https://')) {
-            third.querySelector('.paypal').appendChild(link(row[PAYPAL], row[PAYPAL]));
-          } else if (row[PAYPAL].indexOf('@') >= 0) {
+        if(row["paypal"]) {
+          if(row["paypal"].startsWith('https://')) {
+            third.querySelector('.paypal').appendChild(link(row["paypal"], row["paypal"]));
+          } else if (row["paypal"].indexOf('@') >= 0) {
             var email_url = 'https://www.paypal.com/myaccount/transfer/homepage/external/summary?recipient=';
-            third.querySelector('.paypal').appendChild(link(email_url + row[PAYPAL], row[PAYPAL]));
+            third.querySelector('.paypal').appendChild(link(email_url + row["paypal"], row["paypal"]));
           }
         }
         dest.appendChild(first);

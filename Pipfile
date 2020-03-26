@@ -11,6 +11,8 @@ jinja2 = "*"
 fuzzywuzzy = "*"
 python-levenshtein = "*"
 flask = "*"
+boto3 = "*"
+flask-httpauth = "*"
 
 [requires]
 python_version = "3.6"

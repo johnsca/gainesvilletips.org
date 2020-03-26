@@ -1,8 +1,34 @@
 service: gainesvilletips
 
+plugins:
+  - serverless-python-requirements
+  - serverless-wsgi
+
+custom:
+  tableName: 'servers-table-${self:provider.stage}'
+  wsgi:
+    app: gainesvilletips_org.app
+    packRequirements: false
+  pythonRequirements:
+    dockerizePip: non-linux
+
 provider:
   name: aws
   runtime: python3.8
+  stage: dev
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["ServersDynamoDBTable", "Arn" ] }
+  environment:
+    SERVERS_TABLE: ${self:custom.tableName}
 
 functions:
   webapi:
@@ -10,14 +36,22 @@ functions:
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
+    environment:
+      GOOGLE_TOKEN: ${ssm:/google.tokens.gainesvilletips.org~true}
+      ADMIN_TOKEN: ${ssm:/site-admin.tokens.gainesvilletips.org~true}
 
-plugins:
-  - serverless-python-requirements
-  - serverless-wsgi
-
-custom:
-  wsgi:
-    app: gainesvilletips_org.app
-    packRequirements: false
-  pythonRequirements:
-    dockerizePip: non-linux
+resources:
+  Resources:
+    ServersDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.tableName}
