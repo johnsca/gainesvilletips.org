@@ -1,9 +1,13 @@
-# [GainesvilleTips.org](https://gainesvilletips.org/) Backend Code
+# [GainesvilleTips.org](https://gainesvilletips.org/)
 
-This repo handles the backend logic for fetching and searching data from the
-Google Forms responses spreadsheet.  It uses Python and is run on Amazon Serverless.
-All logic is in [webapi.py](webapi.py) and [template.html](template.html); the rest
+The front end and static content of the site is hosted by WordPress.  This repo
+handles the backend logic for fetching and searching data from the Google Forms
+responses spreadsheet.  It uses Python and is run on Amazon Serverless.  All
+logic is in [webapi.py](webapi.py) and [template.html](template.html); the rest
 is just boilerplate managed by the Serverless CLI (sls).
+
+See the [issues][] for planned future work; issues tagged with `good first issue`
+are ideal to start out with when contributing.
 
 ## Development
 
@@ -43,3 +47,7 @@ Or with a search parameter:
 ```
 sls invoke -f webapi --data '{"queryStringParameters": {"search": "drew"}}'
 ```
+
+
+
+[issues]: https://github.com/johnsca/gainesvilletips.org/issues
