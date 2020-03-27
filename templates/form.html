@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <style type="text/css">
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    {% if errors %}
+      {% for error in errors %}
+      <p class="error">{{ error }}</p>
+      {% endfor %}
+    {% endif %}
+    <form action="add-server" method="POST" enctype="multipart/form-data">
+      <table>
+        <tr><th><label for="name">Name</label></th><td><input name="name" type="text" value="{{ form['name']|default('') }}"/></td></tr>
+        <tr><th><label for="email">Email</label></th><td><input name="email" type="text" value="{{ form['email']|default('') }}"/></td></tr>
+        <tr><th><label for="venue">Venue</label></th><td><input name="venue" type="text" value="{{ form['venue']|default('') }}"/></td></tr>
+        <tr><th><label for="position">Position</label></th><td><input name="position" type="text" value="{{ form['position']|default('') }}"/></td></tr>
+        <tr><th><label for="cash_app">Cash App</label></th><td><input name="cash_app" type="text" value="{{ form['cash_app']|default('') }}"/></td></tr>
+        <tr><th><label for="venmo">Venmo</label></th><td><input name="venmo" type="text" value="{{ form['venmo']|default('') }}"/></td></tr>
+        <tr><th><label for="paypal">Paypal</label></th><td><input name="paypal" type="text" value="{{ form['paypal']|default('') }}"/></td></tr>
+        <tr><th><label for="photo">Photo</label></th><td><input name="photo" type="file" /></td></tr>
+        <tr><td>&nbsp;</td><td></td></tr>
+        <tr><td align="center" colspan="2"><input type="submit" value="Add Me!" /></td></tr>
+      </table>
+    </form>
+  </body>
+</html>
