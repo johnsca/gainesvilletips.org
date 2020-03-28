@@ -88,13 +88,53 @@ def add_server():
         record = Record.from_request(request)
         if record.photo:
             _upload_photo(record, request.files['photo'])
-        db.put_item(TableName=table, Item=record.to_dynamodb())
+        try:
+            db.put_item(TableName=table, Item=record.to_dynamodb())
+        except ClientError as e:
+            raise FormError('Failed to save record') from e
         return redirect(f'/?added={record.id}', code=303)
     except FormError as e:
         return render_template('form.html', **{
             'errors': e.errors,
             'form': request.form,
         })
+
+
+@app.route('/moderate', methods=['GET', 'POST'])
+@auth.login_required
+def moderate():
+    if os.environ.get('USE_DYNAMODB', 'false').lower() != 'true':
+        abort(404)
+    if request.method == 'POST':
+        record_id = request.form.get('id')
+        if request.form.get('accept') and record_id:
+            db.update_item(TableName=table,
+                           Key={'id': {'S': record_id}},
+                           UpdateExpression='SET #field = :value',
+                           ExpressionAttributeNames={'#field': 'moderated'},
+                           ExpressionAttributeValues={
+                               ':value': {'BOOL': True},
+                           })
+        elif request.form.get('delete') and record_id:
+            db.delete_item(TableName=table,
+                           Key={'id': {'S': record_id}})
+        return redirect(f'/moderate', code=303)
+    data = [record for record in _load_data() if not record.moderated]
+    return render_template('index.html', **{
+        'search': '',
+        'is_added': False,
+        'is_moderating': True,
+        'search_results': data,
+        'random_results': [],
+
+        # These are used to allow opening the template directly as HTML for
+        # style editing with placeholder data but also do the right thing when
+        # the template is rendered.
+        'html_comment': Markup('<!--'),
+        'html_comment_end': Markup('-->'),
+        'js_comment': Markup('/*'),
+        'js_comment_end': Markup('*/'),
+    })
 
 
 @app.route('/import')
@@ -220,6 +260,8 @@ class Record(dict):
         self = cls()
         for field, value in item.items():
             setattr(self, field, list(value.values())[0])
+        if not isinstance(self.moderated, bool):
+            print(f'{self.id}: {self.moderated} [{type(self.moderated)}]')
         return self
 
     @classmethod

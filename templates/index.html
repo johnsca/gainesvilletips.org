@@ -24,9 +24,43 @@
         width: 88px;
         height: 88px;
       }
+      .moderation {
+        text-align: center;
+      }
+      .moderation .accept,
+      .moderation .delete {
+        display: block;
+        border-radius: 4px;
+        width: 45px;
+        height: 40px;
+        font-size: 26pt;
+        font-weight: bold;
+        margin: 8px 10px;
+      }
+      .moderation .accept {
+        border: 1px solid darkgreen;
+        color: darkgreen;
+        background-color: lightgreen;
+      }
+      .moderation .delete {
+        border: 1px solid darkred;
+        color: black;
+        background-color: red;
+      }
     </style>
     <template id="server-template">
       <tr class="first">
+        <!-- {{ html_comment_end }}
+        {% if is_moderating %} {{ html_comment }} -->
+          <td class="moderation" rowspan="3">
+            <form method="POST">
+              <input class="id" type="hidden" name="id" value="" />
+              <input class="accept" title="Accept" value="&check;" name="accept" type="submit" />
+              <input class="delete" title="Delete" value="&times;" name="delete" type="submit" />
+            </form>
+          </td>
+        <!-- {{ html_comment_end }}
+        {% endif %} {{ html_comment }} -->
         <td class="photo" rowspan="3"></td>
         <td class="name" rowspan="3"></td>
         <td class="venue" rowspan="3"></td>
@@ -49,7 +83,7 @@
     {% if is_added %} {{ html_comment }} -->
       <h1>You have been added, pending moderation, thank you!</h1>
     <!-- {{ html_comment_end }}
-    {% else %} {{ html_comment }} -->
+    {% elif not is_moderating %} {{ html_comment }} -->
       <form method="GET">
         <label for="search">Search by server name or establishment:</label>
         <!-- {{ html_comment_end }}
@@ -64,12 +98,13 @@
     <!-- {{ html_comment_end }}
     {% endif %} {{ html_comment }} -->
     <!-- {{ html_comment_end }}
-    {% if search and not search_results %}
-      {{ html_comment }} -->
+    {% if is_moderating %} {{ html_comment }} -->
+      <h2>These folks need moderation.</h2>
+    <!-- {{ html_comment_end }}
+    {% elif search and not search_results %} {{ html_comment }} -->
       <h2>We're sorry, but we weren't able to find who you were looking for.</h2>
     <!-- {{ html_comment_end }}
-    {% elif search and search_results %}
-      {{ html_comment }} -->
+    {% elif search and search_results %} {{ html_comment }} -->
       <h2>These are the fine folks we found who matched your search.</h2>
     <!-- {{ html_comment_end }}
     {% endif %}
@@ -77,6 +112,11 @@
       <table id="results">
         <thead>
           <tr>
+            <!-- {{ html_comment_end }}
+            {% if is_moderating %} {{ html_comment }} -->
+            <th>Moderate</th>
+            <!-- {{ html_comment_end }}
+            {% endif %} {{ html_comment }} -->
             <th>Photo</th>
             <th>Name</th>
             <th>Establishment</th>
@@ -195,6 +235,10 @@
         var first = document.importNode(template.content.querySelector('.first'), true);
         var second = document.importNode(template.content.querySelector('.second'), true);
         var third = document.importNode(template.content.querySelector('.third'), true);
+        var mod_id_field = first.querySelector('.id');
+        if(mod_id_field) {
+          mod_id_field.value = record.id;
+        }
         if(record.photo && record.thumbnail) {
           first.querySelector('.photo').appendChild(img_link(record.photo, record.thumbnail));
         }
