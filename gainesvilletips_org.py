@@ -1,3 +1,4 @@
+import io
 import mimetypes
 import os
 import pickle
@@ -5,7 +6,7 @@ import random
 from base64 import b64decode
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from uuid import uuid4
 
 import boto3
@@ -14,6 +15,7 @@ from flask import abort, Flask, redirect, render_template, request
 from flask_httpauth import HTTPBasicAuth
 from fuzzywuzzy import process
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 from jinja2 import Markup
 from PIL import Image
 
@@ -95,7 +97,8 @@ def add_server():
             raise FormError('Cannot update spreadsheet')
         record = Record.from_request(request)
         if record.photo:
-            _upload_photo(record, request.files['photo'])
+            _save_form_photo(record)
+            _upload_photo(record)
         try:
             db.put_item(TableName=table, Item=record.to_dynamodb())
         except ClientError as e:
@@ -160,6 +163,9 @@ def import_from_spreadsheet():
 
     # TODO: Use batch_write_item to improve efficiency
     for record in data:
+        if record._drive_file_id:
+            _save_drive_photo(record)
+            _upload_photo(record)
         db.put_item(TableName=table, Item=record.to_dynamodb())
     return 'Imported'
 
@@ -208,6 +214,7 @@ class Record(dict):
     def __init__(self):
         super().__init__({field: '' for field in self.fields})
         self['moderated'] = False
+        self._drive_file_id = None
 
     def __getattr__(self, name):
         if name not in self:
@@ -263,9 +270,8 @@ class Record(dict):
         self.paypal = request.form['paypal']
         photo_filename = _filename(request, 'photo')
         if photo_filename:
-            suffix = Path(photo_filename).suffix
-            self.photo = f'{photo_bucket_url}{self.id}{suffix}'
-            self.thumbnail = f'{photo_bucket_url}{self.id}-thumb{suffix}'
+            self.photo = f'{photo_bucket_url}{self.id}{self._suffix}'
+            self.thumbnail = f'{photo_bucket_url}{self.id}-thumb{self._suffix}'
         else:
             self.photo = ''
             self.thumbnail = ''
@@ -276,18 +282,19 @@ class Record(dict):
         self = cls()
         for field, value in item.items():
             setattr(self, field, list(value.values())[0])
-        if not isinstance(self.moderated, bool):
-            print(f'{self.id}: {self.moderated} [{type(self.moderated)}]')
         return self
 
     @classmethod
     def from_spreadsheet(cls, row_num, data):
         self = cls()
-        self.id = f'spreadsheet:{row_num}'
+        self.id = f'spreadsheet-{row_num}'
         self.moderated = True
         for field, col_num in self.spreadsheet_columns.items():
             value = data[col_num] if col_num < len(data) else ''
             setattr(self, field, value)
+        if self.photo.startswith('https://drive.google.com/'):
+            self._drive_file_id = parse_qs(urlparse(self.photo).query)['id'][0]
+            self.photo = ''
         return self
 
     def to_dynamodb(self):
@@ -298,6 +305,14 @@ class Record(dict):
             item_type = 'BOOL' if field == 'moderated' else 'S'
             item[field] = {item_type: value}
         return item
+
+    @property
+    def photo_filename(self):
+        return Path(urlparse(self.photo).path).name
+
+    @property
+    def thumb_filename(self):
+        return Path(urlparse(self.thumbnail).path).name
 
 
 def _load_data(item_id=None):
@@ -322,18 +337,18 @@ def _load_dynamodb_data(item_id=None):
     return [Record.from_dynamodb(item) for item in results['Items']]
 
 
+def _gapi(api_name, version):
+    creds = pickle.loads(b64decode(os.environ['GOOGLE_TOKEN']))
+    service = build(api_name, version, credentials=creds)
+    return service
+
+
 def _load_spreadsheet_data(item_id=None):
     # The ID and range of a sample spreadsheet.
     SPREADSHEET_ID = '1nnPbkhFI-P5TR4wqxklePRTI_aQT7XNgvYx4MclWJ5U'
     RANGE_NAME = "'Live on Site'!A2:J"
 
-    # The file token.pickle stores the user's access and refresh tokens.
-    creds = pickle.loads(b64decode(os.environ['GOOGLE_TOKEN']))
-
-    service = build('sheets', 'v4', credentials=creds)
-
-    # Call the Sheets API
-    sheet = service.spreadsheets()
+    sheet = _gapi('sheets', 'v4').spreadsheets()
     results = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
                                  range=RANGE_NAME).execute().get('values', [])
     return [Record.from_spreadsheet(row_num, data)
@@ -346,15 +361,32 @@ def _filename(request, field):
     return request.files[field].filename or None
 
 
-def _upload_photo(record, photo_file):
-    photo_obj_name = Path(urlparse(record.photo).path).name
-    thumb_obj_name = Path(urlparse(record.thumbnail).path).name
-    photo_tmp_file = f'/tmp/{photo_obj_name}'
-    thumb_tmp_file = f'/tmp/{thumb_obj_name}'
-    content_type = mimetypes.guess_type(photo_obj_name)[0]
+def _save_form_photo(record):
+    request.files['photo'].save(f'/tmp/{record.photo_filename}')
+
+
+def _save_drive_photo(record):
+    drive = _gapi('drive', 'v3').files()
+
+    metadata = drive.get(fileId=record._drive_file_id).execute()
+    suffix = '.' + metadata['mimeType'].split('/')[1]
+    record.photo = f'{photo_bucket_url}{record.id}{suffix}'
+    record.thumbnail = f'{photo_bucket_url}{record.id}-thumb{suffix}'
+
+    request = drive.get_media(fileId=record._drive_file_id)
+    with open(f'/tmp/{record.photo_filename}', 'wb') as fh:
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+
+
+def _upload_photo(record):
+    content_type = mimetypes.guess_type(record.photo_filename)[0]
+    photo_tmp_file = f'/tmp/{record.photo_filename}'
+    thumb_tmp_file = f'/tmp/{record.thumb_filename}'
     try:
-        photo_file.save(photo_tmp_file)
-        thumb = Image.open(photo_file)
+        thumb = Image.open(photo_tmp_file)
         thumb.thumbnail(thumbnail_size)
         thumb.save(thumb_tmp_file)
     except Exception as e:
@@ -362,9 +394,13 @@ def _upload_photo(record, photo_file):
             raise
         raise FormError('Unable to process photo') from e
     try:
-        s3.upload_file(photo_tmp_file, photo_bucket_name, photo_obj_name,
+        s3.upload_file(photo_tmp_file,
+                       photo_bucket_name,
+                       record.photo_filename,
                        ExtraArgs={'ContentType': content_type})
-        s3.upload_file(thumb_tmp_file, photo_bucket_name, thumb_obj_name,
+        s3.upload_file(thumb_tmp_file,
+                       photo_bucket_name,
+                       record.thumb_filename,
                        ExtraArgs={'ContentType': content_type})
     except ClientError as e:
         if app.debug:

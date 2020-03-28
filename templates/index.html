@@ -23,6 +23,11 @@
         padding: 1px;
         width: 88px;
         height: 88px;
+        text-align: center;
+      }
+      td.photo img {
+        max-width: 88px;
+        max-height: 88px;
       }
       .moderation {
         text-align: center;
@@ -155,8 +160,6 @@
       a.href = url;
       a.target = '_top';
       img.src = img_url;
-      img.width = '88';
-      img.height = '88';
       a.appendChild(img);
       return a;
     }
