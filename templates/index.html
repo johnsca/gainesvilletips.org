@@ -1,0 +1,269 @@
+<html>
+  <head>
+    <style type="text/css">
+      body {
+        padding-top: 1em;
+        width: fit-content;
+        margin: auto;
+        text-align: center;
+      }
+      label {
+        font-weight: bold;
+        font-size: 36px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td, th {
+        border: 1px solid black;
+        padding: 0.5em 1em;
+      }
+      td.photo {
+        padding: 1px;
+        width: 88px;
+        height: 88px;
+      }
+      .moderation {
+        text-align: center;
+      }
+      .moderation .accept,
+      .moderation .delete {
+        display: block;
+        border-radius: 4px;
+        width: 45px;
+        height: 40px;
+        font-size: 26pt;
+        font-weight: bold;
+        margin: 8px 10px;
+      }
+      .moderation .accept {
+        border: 1px solid darkgreen;
+        color: darkgreen;
+        background-color: lightgreen;
+      }
+      .moderation .delete {
+        border: 1px solid darkred;
+        color: black;
+        background-color: red;
+      }
+    </style>
+    <template id="server-template">
+      <tr class="first">
+        <!-- {{ html_comment_end }}
+        {% if is_moderating %} {{ html_comment }} -->
+          <td class="moderation" rowspan="3">
+            <form method="POST">
+              <input class="id" type="hidden" name="id" value="" />
+              <input class="accept" title="Accept" value="&check;" name="accept" type="submit" />
+              <input class="delete" title="Delete" value="&times;" name="delete" type="submit" />
+            </form>
+          </td>
+        <!-- {{ html_comment_end }}
+        {% endif %} {{ html_comment }} -->
+        <td class="photo" rowspan="3"></td>
+        <td class="name" rowspan="3"></td>
+        <td class="venue" rowspan="3"></td>
+        <td class="position" rowspan="3"></td>
+        <th>Cash App</th>
+        <td class="cash-app"></td>
+      </tr>
+      <tr class="second">
+        <th>Venmo</th>
+        <td class="venmo"></td>
+      </tr>
+      <tr class="third">
+        <th>PayPal</th>
+        <td class="paypal"></td>
+      </tr>
+    </template>
+  </head>
+  <body>
+    <!-- {{ html_comment_end }}
+    {% if is_added %} {{ html_comment }} -->
+      <h1>You have been added, pending moderation, thank you!</h1>
+    <!-- {{ html_comment_end }}
+    {% elif not is_moderating %} {{ html_comment }} -->
+      <form method="GET">
+        <label for="search">Search by server name or establishment:</label>
+        <!-- {{ html_comment_end }}
+          <input type="text" name="search" value="{{ search }}" />
+        {{ html_comment }} -->
+        <!-- {# -->
+          <input type="text" name="search" value="" />
+        <!-- #} -->
+        <input type="submit" value="Search" />
+      </form>
+      <hr />
+    <!-- {{ html_comment_end }}
+    {% endif %} {{ html_comment }} -->
+    <!-- {{ html_comment_end }}
+    {% if is_moderating %} {{ html_comment }} -->
+      <h2>These folks need moderation.</h2>
+    <!-- {{ html_comment_end }}
+    {% elif search and not search_results %} {{ html_comment }} -->
+      <h2>We're sorry, but we weren't able to find who you were looking for.</h2>
+    <!-- {{ html_comment_end }}
+    {% elif search and search_results %} {{ html_comment }} -->
+      <h2>These are the fine folks we found who matched your search.</h2>
+    <!-- {{ html_comment_end }}
+    {% endif %}
+    {% if search_results %} {{ html_comment }} -->
+      <table id="results">
+        <thead>
+          <tr>
+            <!-- {{ html_comment_end }}
+            {% if is_moderating %} {{ html_comment }} -->
+            <th>Moderate</th>
+            <!-- {{ html_comment_end }}
+            {% endif %} {{ html_comment }} -->
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Establishment</th>
+            <th>Position</th>
+            <th colspan="2">Payment</th>
+        </thead>
+      </table>
+    <!-- {{ html_comment_end }}
+    {% endif %}
+    {% if random_results %} {{ html_comment }} -->
+    <h2>Here are some <!-- {{ html_comment_end }} {% if search_results %}additional{% endif %} {{ html_comment }} --> random servers that you can donate to.  <a href="">Refresh</a> or search to see other servers.</h2>
+    <table id="random">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Establishment</th>
+          <th>Position</th>
+          <th colspan="2">Payment</th>
+      </thead>
+    </table>
+    <!-- {{ html_comment_end }}
+    {% endif %} {{ html_comment }} -->
+  </body>
+  <script type="text/javascript">
+    function link(url, text) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.appendChild(document.createTextNode(text));
+      return a;
+    }
+    function img_link(url, img_url) {
+      var a = document.createElement('a');
+      var img = document.createElement('img');
+      a.href = url;
+      a.target = '_top';
+      img.src = img_url;
+      img.width = '88';
+      img.height = '88';
+      a.appendChild(img);
+      return a;
+    }
+    var template = document.querySelector('#server-template');
+    var results_table = document.querySelector('#results');
+    var random_table = document.querySelector('#random');
+    var search_results = /* {{ js_comment_end }} {{ search_results|tojson }} {{ js_comment }} {# */ [
+      {
+        "photo":     "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png",
+        "thumbnail": "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png",
+        "name":      "Bob Belcher",
+        "venue":     "Bob's Burgers",
+        "position":  "Cook",
+        "cash_app":  "$bob",
+        "venmo":     "@bob",
+        "paypal":    "bob"
+      },
+      {
+        "photo": "",
+        "thumbnail": "",
+        "name": "Joe",
+        "venue": "Joe's Crabshack",
+        "position": "Cook",
+        "cash_app": "$joe",
+        "venmo": "@joe",
+        "paypal": "joe"
+      }]; /* #} */
+    var random_results = /* {{ js_comment_end }} {{ random_results|tojson }} {{ js_comment }} {# */ [
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Scooby Doo",
+        "venue":     "The Van",
+        "position":  "Cook",
+        "cash_app":  "$scooby",
+        "venmo":     "@scooby",
+        "paypal":    "scooby"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Kevin",
+        "venue":     "Satchel's",
+        "position":  "Promoter",
+        "cash_app":  "$kevin",
+        "venmo":     "@kevin",
+        "paypal":    "kevin"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Harry Dresden",
+        "venue":     "McAnally's Pub",
+        "position":  "Security",
+        "cash_app":  "$harry",
+        "venmo":     "@harry",
+        "paypal":    "harry"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Spongebob Squarepants",
+        "venue":     "Krusty Krab",
+        "position":  "Cook",
+        "cash_app":  "$sponge",
+        "venmo":     "@sponge",
+        "paypal":    "sponge"
+      }];
+      /* #} */
+    var datasets = [[results_table, search_results], [random_table, random_results]];
+    for(var i=0; i<datasets.length; i++) {
+      var dest = datasets[i][0];
+      var data = datasets[i][1];
+      for(var j=0; j<data.length; j++) {
+        var record = data[j];
+        var first = document.importNode(template.content.querySelector('.first'), true);
+        var second = document.importNode(template.content.querySelector('.second'), true);
+        var third = document.importNode(template.content.querySelector('.third'), true);
+        var mod_id_field = first.querySelector('.id');
+        if(mod_id_field) {
+          mod_id_field.value = record.id;
+        }
+        if(record.photo && record.thumbnail) {
+          first.querySelector('.photo').appendChild(img_link(record.photo, record.thumbnail));
+        }
+        first.querySelector('.name').innerText = record.name;
+        first.querySelector('.venue').innerText = record.venue;
+        first.querySelector('.position').innerText = record.position;
+        if(record.cash_app) {
+          first.querySelector('.cash-app').appendChild(link('https://cash.app/' + record.cash_app, record.cash_app));
+        }
+        if(record.venmo) {
+          second.querySelector('.venmo').appendChild(link('https://venmo.com/' + record.venmo.replace('@', ''), record.venmo));
+        }
+        if(record.paypal) {
+          if(record.paypal.startsWith('https://')) {
+            third.querySelector('.paypal').appendChild(link(record.paypal, record.paypal));
+          } else if (record.paypal.indexOf('@') >= 0) {
+            var email_url = 'https://www.paypal.com/myaccount/transfer/homepage/external/summary?recipient=';
+            third.querySelector('.paypal').appendChild(link(email_url + record.paypal, record.paypal));
+          }
+        }
+        dest.appendChild(first);
+        dest.appendChild(second);
+        dest.appendChild(third);
+      }
+    }
+    window.parent.postMessage({'scrollHeight': document.body.scrollHeight}, '*');
+  </script>
+</html>

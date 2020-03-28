@@ -10,6 +10,11 @@ google-api-python-client = "*"
 jinja2 = "*"
 fuzzywuzzy = "*"
 python-levenshtein = "*"
+flask = "*"
+boto3 = "*"
+flask-httpauth = "*"
+pillow = "*"
+ipdb = "*"
 
 [requires]
 python_version = "3.6"

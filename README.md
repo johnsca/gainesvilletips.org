@@ -2,7 +2,7 @@
 
 The front end and static content of the site is hosted by WordPress.  This repo
 handles the backend logic for fetching and searching data from the Google Forms
-responses spreadsheet.  It uses Python and is run on Amazon Serverless.  All
+responses spreadsheet.  It uses Python and Flask, and is run on Amazon Serverless.  All
 logic is in [webapi.py](webapi.py) and [template.html](template.html); the rest
 is just boilerplate managed by the Serverless CLI (sls).
 
@@ -27,7 +27,7 @@ example from Google.
 To deploy to AWS using the dev stage, use:
 
 ```
-sls deploy [--stage dev]
+sls deploy --stage dev
 ```
 
 To deploy to production, use:
@@ -36,16 +36,14 @@ To deploy to production, use:
 sls deploy --stage prod
 ```
 
-To submit a test request, use:
+## Development
+
+You can view the [templates](templates/) directly in your browser, with test
+data populated, for working with the styles and Javascript code.  You can also
+have Flask serve it locally to test the backend code, with:
 
 ```
-sls invoke -f webapi
-```
-
-Or with a search parameter:
-
-```
-sls invoke -f webapi --data '{"queryStringParameters": {"search": "drew"}}'
+FLASK_APP=gainesvilletips_org.py pipenv run flask run
 ```
 
 
