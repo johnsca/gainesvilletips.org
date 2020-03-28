@@ -21,3 +21,4 @@ var/
 
 # Auth tokens
 token.pickle
+.DS_Store

@@ -1,9 +1,96 @@
 <html>
-  <head>
+  <head><style type="text/css">
+.form-style-1 {
+	margin:10px auto;
+	max-width: 400px;
+	padding: 20px 12px 10px 20px;
+	font: 13px "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+.form-style-1 li {
+	padding: 0;
+	display: block;
+	list-style: none;
+	margin: 10px 0 0 0;
+}
+.form-style-1 label{
+	margin:0 0 3px 0;
+	padding:0px;
+	display:block;
+	font-weight: bold;
+}
+.form-style-1 input[type=text],
+.form-style-1 input[type=date],
+.form-style-1 input[type=datetime],
+.form-style-1 input[type=number],
+.form-style-1 input[type=search],
+.form-style-1 input[type=time],
+.form-style-1 input[type=url],
+.form-style-1 input[type=email],
+textarea,
+select{
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	border:1px solid #BEBEBE;
+	padding: 7px;
+	margin:0px;
+	-webkit-transition: all 0.30s ease-in-out;
+	-moz-transition: all 0.30s ease-in-out;
+	-ms-transition: all 0.30s ease-in-out;
+	-o-transition: all 0.30s ease-in-out;
+	outline: none;
+}
+.form-style-1 input[type=text]:focus,
+.form-style-1 input[type=date]:focus,
+.form-style-1 input[type=datetime]:focus,
+.form-style-1 input[type=number]:focus,
+.form-style-1 input[type=search]:focus,
+.form-style-1 input[type=time]:focus,
+.form-style-1 input[type=url]:focus,
+.form-style-1 input[type=email]:focus,
+.form-style-1 textarea:focus,
+.form-style-1 select:focus{
+	-moz-box-shadow: 0 0 8px #88D5E9;
+	-webkit-box-shadow: 0 0 8px #88D5E9;
+	box-shadow: 0 0 8px #88D5E9;
+	border: 1px solid #88D5E9;
+}
+.form-style-1 .field-divided{
+	width: 49%;
+}
+
+.form-style-1 .field-long{
+	width: 100%;
+}
+.form-style-1 .field-select{
+	width: 100%;
+}
+.form-style-1 .field-textarea{
+	height: 100px;
+}
+.form-style-1 input[type=submit], .form-style-1 input[type=button]{
+	background: #4B99AD;
+	padding: 8px 15px 8px 15px;
+	border: none;
+	color: #fff;
+}
+.form-style-1 input[type=submit]:hover, .form-style-1 input[type=button]:hover{
+	background: #4691A4;
+	box-shadow:none;
+	-moz-box-shadow:none;
+	-webkit-box-shadow:none;
+}
+.form-style-1 .required{
+	color:red;
+}
+</style>
     <style type="text/css">
       .error {
         color: red;
         font-weight: bold;
+      }
+    .form-style-1 li.btnsubmit {
+        padding-top: 1em;
       }
     </style>
   </head>
@@ -16,27 +103,27 @@
     {% endif %}
     {{ html_comment }} -->
     <form action="add-server" method="POST" enctype="multipart/form-data">
-      <table>
+      <ul class="form-style-1">
         <!-- {{ html_comment_end }}
-        <tr><th><label for="name">Name</label></th><td><input name="name" type="text" value="{{ form['name']|default('') }}"/></td></tr>
-        <tr><th><label for="email">Email</label></th><td><input name="email" type="text" value="{{ form['email']|default('') }}"/></td></tr>
-        <tr><th><label for="venue">Venue</label></th><td><input name="venue" type="text" value="{{ form['venue']|default('') }}"/></td></tr>
-        <tr><th><label for="position">Position</label></th><td><input name="position" type="text" value="{{ form['position']|default('') }}"/></td></tr>
-        <tr><th><label for="cash_app">Cash App</label></th><td><input name="cash_app" type="text" value="{{ form['cash_app']|default('') }}"/></td></tr>
-        <tr><th><label for="venmo">Venmo</label></th><td><input name="venmo" type="text" value="{{ form['venmo']|default('') }}"/></td></tr>
-        <tr><th><label for="paypal">Paypal</label></th><td><input name="paypal" type="text" value="{{ form['paypal']|default('') }}"/></td></tr>
+        <li><label for="name">Name <span class="required">*</span></label> <input name="name" type="text" value="{{ form['name']|default('') }}" class="field-long"/> </li>
+        <li><label for="email">Email <span class="required">*</span></label> <input name="email" type="text" value="{{ form['email']|default('') }}" class="field-long"/> </li>
+        <li><label for="venue">Establishment <span class="required">*</span></label> <input name="venue" type="text" value="{{ form['venue']|default('') }}" class="field-long"/> </li>
+        <li><label for="position">Position <span class="required">*</span></label> <input name="position" type="text" value="{{ form['position']|default('') }}" class="field-long"/> </li>
+        <li><label for="cash_app">Cash App</label> <input name="cash_app" type="text" value="{{ form['cash_app']|default('') }}" class="field-long"/> </li>
+        <li><label for="venmo">Venmo</label> <input name="venmo" type="text" value="{{ form['venmo']|default('') }}" class="field-long"/> </li>
+        <li><label for="paypal">Paypal</label> <input name="paypal" type="text" value="{{ form['paypal']|default('') }}" class="field-long"/> </li>
         {# {{ html_comment }} -->
-        <tr><th><label for="name">Name</label></th><td><input name="name" type="text" value=""/></td></tr>
-        <tr><th><label for="email">Email</label></th><td><input name="email" type="text" value=""/></td></tr>
-        <tr><th><label for="venue">Venue</label></th><td><input name="venue" type="text" value=""/></td></tr>
-        <tr><th><label for="position">Position</label></th><td><input name="position" type="text" value=""/></td></tr>
-        <tr><th><label for="cash_app">Cash App</label></th><td><input name="cash_app" type="text" value=""/></td></tr>
-        <tr><th><label for="venmo">Venmo</label></th><td><input name="venmo" type="text" value=""/></td></tr>
-        <tr><th><label for="paypal">Paypal</label></th><td><input name="paypal" type="text" value=""/></td></tr>
+        <li><label for="name">Name <span class="required">*</span></label> <input name="name" type="text" value="" class="field-long"/> </li>
+        <li><label for="email">Email <span class="required">*</span></label> <input name="email" type="text" value="" class="field-long"/> </li>
+        <li><label for="venue">Establishment <span class="required">*</span></label> <input name="venue" type="text" value="" class="field-long"/> </li>
+        <li><label for="position">Position <span class="required">*</span></label> <input name="position" type="text" value="" class="field-long"/> </li>
+        <li><label for="cash_app">Cash App</label> <input name="cash_app" type="text" value="" class="field-long"/> </li>
+        <li><label for="venmo">Venmo</label> <input name="venmo" type="text" value="" class="field-long"/> </li>
+        <li><label for="paypal">Paypal</label> <input name="paypal" type="text" value="" class="field-long"/> </li>
         <!-- #} -->
-        <tr><th><label for="photo">Photo</label></th><td><input name="photo" type="file" /></td></tr>
-        <tr><td>&nbsp;</td><td></td></tr>
-        <tr><td align="center" colspan="2"><input type="submit" value="Add Me!" /></td></tr>
+        <li><label for="photo">Photo</label> <input name="photo" type="file" /> </li>
+
+        <li class="btnsubmit"><input type="submit" value="Add Me!" /> </li>
       </table>
     </form>
   </body>
