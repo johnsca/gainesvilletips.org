@@ -95,15 +95,14 @@ select{
     </style>
   </head>
   <body>
-    <!-- {{ html_comment_end }}
-    {% if errors %}
-      {% for error in errors %}
-      <p class="error">{{ error }}</p>
-      {% endfor %}
-    {% endif %}
-    {{ html_comment }} -->
     <form action="add-server" method="POST" enctype="multipart/form-data">
       <ul class="form-style-1">
+        <!-- {{ html_comment_end }}
+        {% if errors %}
+          {% for error in errors %}
+          <li class="error">{{ error }}</li>
+          {% endfor %}
+        {% endif %} {{ html_comment }} -->
         <!-- {{ html_comment_end }}
         <li><label for="name">Name <span class="required">*</span></label> <input name="name" type="text" value="{{ form['name']|default('') }}" class="field-long"/> </li>
         <li><label for="email">Email <span class="required">*</span></label> <input name="email" type="text" value="{{ form['email']|default('') }}" class="field-long"/> </li>
@@ -112,7 +111,8 @@ select{
         <li><label for="cash_app">Cash App</label> <input name="cash_app" type="text" value="{{ form['cash_app']|default('') }}" class="field-long"/> </li>
         <li><label for="venmo">Venmo</label> <input name="venmo" type="text" value="{{ form['venmo']|default('') }}" class="field-long"/> </li>
         <li><label for="paypal">Paypal</label> <input name="paypal" type="text" value="{{ form['paypal']|default('') }}" class="field-long"/> </li>
-        {# {{ html_comment }} -->
+        {{ html_comment }} -->
+        <!-- {# -->
         <li><label for="name">Name <span class="required">*</span></label> <input name="name" type="text" value="" class="field-long"/> </li>
         <li><label for="email">Email <span class="required">*</span></label> <input name="email" type="text" value="" class="field-long"/> </li>
         <li><label for="venue">Establishment <span class="required">*</span></label> <input name="venue" type="text" value="" class="field-long"/> </li>
