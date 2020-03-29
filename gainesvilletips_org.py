@@ -143,7 +143,9 @@ def moderate():
         elif request.form.get('delete') and record_id:
             db.delete_item(TableName=table,
                            Key={'id': {'S': record_id}})
-        return redirect(url_for('moderate', token=request_token),
+        return redirect(url_for('moderate',
+                                token=request_token,
+                                search=search),
                         code=303)
     data = _load_data()
     total_active = len([True for record in data if record.moderated])
