@@ -19,6 +19,7 @@ custom:
 
 provider:
   name: aws
+  stage: prod
   runtime: python3.8
   iamRoleStatements:
     - Effect: Allow

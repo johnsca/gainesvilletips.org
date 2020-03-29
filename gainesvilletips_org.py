@@ -426,5 +426,5 @@ def _upload_photo(record):
 
 
 def _cleanup_photos(record):
-    Path(f'/tmp/{record.photo_filename}').unlink(missing_ok=True)
-    Path(f'/tmp/{record.thumb_filename}').unlink(missing_ok=True)
+    Path(f'/tmp/{record.photo_filename}').unlink()
+    Path(f'/tmp/{record.thumb_filename}').unlink()
