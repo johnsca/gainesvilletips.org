@@ -6,6 +6,7 @@
         width: fit-content;
         margin: auto;
         text-align: center;
+        font-family: "Arimo",sans-serif;
       }
       label {
         font-weight: bold;
@@ -68,6 +69,11 @@
         {% endif %} {{ html_comment }} -->
         <td class="photo" rowspan="3"></td>
         <td class="name" rowspan="3"></td>
+        <!-- {{ html_comment_end }}
+        {% if is_moderating %} {{ html_comment }} -->
+        <td class="email" rowspan="3"></td>
+        <!-- {{ html_comment_end }}
+        {% endif %} {{ html_comment }} -->
         <td class="venue" rowspan="3"></td>
         <td class="position" rowspan="3"></td>
         <th>Cash App</th>
@@ -85,10 +91,15 @@
   </head>
   <body>
     <!-- {{ html_comment_end }}
+    {% if is_moderating %} {{ html_comment }} -->
+      <h1>Total Active Users: {{ total_active }}</h1>
+    <!-- {{ html_comment_end }}
+    {% endif %} {{ html_comment }} -->
+    <!-- {{ html_comment_end }}
     {% if is_added %} {{ html_comment }} -->
       <h1>You have been added, pending moderation, thank you!</h1>
     <!-- {{ html_comment_end }}
-    {% elif not is_moderating %} {{ html_comment }} -->
+    {% else %} {{ html_comment }} -->
       <form method="GET">
         <label for="search">Search by server name or establishment:</label>
         <!-- {{ html_comment_end }}
@@ -97,24 +108,28 @@
         <!-- {# -->
           <input type="text" name="search" value="" />
         <!-- #} -->
+        <!-- {{ html_comment_end }}
+        {% if is_moderating %} {{ html_comment }} -->
+          <input type="hidden" name="token" value="{{ request_token }}" />
+        <!-- {{ html_comment_end }}
+        {% endif %} {{ html_comment }} -->
         <input type="submit" value="Search" />
       </form>
       <hr />
     <!-- {{ html_comment_end }}
     {% endif %} {{ html_comment }} -->
+
     <!-- {{ html_comment_end }}
-    {% if is_moderating %} {{ html_comment }} -->
-      <h2>These folks need moderation.</h2>
-    <!-- {{ html_comment_end }}
-    {% elif search and not search_results %} {{ html_comment }} -->
+    {% if search and not search_results %} {{ html_comment }} -->
       <h2>We're sorry, but we weren't able to find who you were looking for.</h2>
     <!-- {{ html_comment_end }}
-    {% elif search and search_results %} {{ html_comment }} -->
-      <h2>These are the fine folks we found who matched your search.</h2>
-    <!-- {{ html_comment_end }}
-    {% endif %}
-    {% if search_results %} {{ html_comment }} -->
-      <table id="results">
+    {% elif search_results %} {{ html_comment }} -->
+      <!-- {{ html_comment_end }}
+      {% if not is_added %} {{ html_comment }} -->
+        <h2>These are the fine folks we found who matched your search.</h2>
+      <!-- {{ html_comment_end }}
+      {% endif %} {{ html_comment }} -->
+      <table id="search_results">
         <thead>
           <tr>
             <!-- {{ html_comment_end }}
@@ -124,20 +139,58 @@
             {% endif %} {{ html_comment }} -->
             <th>Photo</th>
             <th>Name</th>
+            <!-- {{ html_comment_end }}
+            {% if is_moderating %} {{ html_comment }} -->
+            <th>Email</th>
+            <!-- {{ html_comment_end }}
+            {% endif %} {{ html_comment }} -->
             <th>Establishment</th>
             <th>Position</th>
             <th colspan="2">Payment</th>
         </thead>
       </table>
     <!-- {{ html_comment_end }}
-    {% endif %}
+    {% endif %} {{ html_comment }} -->
+
+    <!-- {{ html_comment_end }}
+    {% if is_moderating and not moderation_results %} {{ html_comment }} -->
+      <h2>No one currently requires moderation.</h2>
+    <!-- {{ html_comment_end }}
+    {% elif is_moderating and moderation_results %} {{ html_comment }} -->
+      <h2>These folks need moderation.</h2>
+      <table id="moderation_results">
+        <thead>
+          <tr>
+            <th>Moderate</th>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Establishment</th>
+            <th>Position</th>
+            <th colspan="2">Payment</th>
+        </thead>
+      </table>
+    <!-- {{ html_comment_end }}
+    {% endif %} {{ html_comment }} -->
+
+    <!-- {{ html_comment_end }}
     {% if random_results %} {{ html_comment }} -->
     <h2>Here are some <!-- {{ html_comment_end }} {% if search_results %}additional{% endif %} {{ html_comment }} --> random servers that you can donate to.  <a href="">Refresh</a> or search to see other servers.</h2>
-    <table id="random">
+    <table id="random_results">
       <thead>
         <tr>
+          <!-- {{ html_comment_end }}
+          {% if is_moderating %} {{ html_comment }} -->
+          <th>Moderate</th>
+          <!-- {{ html_comment_end }}
+          {% endif %} {{ html_comment }} -->
           <th>Photo</th>
           <th>Name</th>
+          <!-- {{ html_comment_end }}
+          {% if is_moderating %} {{ html_comment }} -->
+          <th>Email</th>
+          <!-- {{ html_comment_end }}
+          {% endif %} {{ html_comment }} -->
           <th>Establishment</th>
           <th>Position</th>
           <th colspan="2">Payment</th>
@@ -164,13 +217,15 @@
       return a;
     }
     var template = document.querySelector('#server-template');
-    var results_table = document.querySelector('#results');
-    var random_table = document.querySelector('#random');
+    var search_results_table = document.querySelector('#search_results');
+    var moderation_results_table = document.querySelector('#moderation_results');
+    var random_results_table = document.querySelector('#random_results');
     var search_results = /* {{ js_comment_end }} {{ search_results|tojson }} {{ js_comment }} {# */ [
       {
         "photo":     "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png",
         "thumbnail": "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png",
         "name":      "Bob Belcher",
+        "email":     "bob@example.com",
         "venue":     "Bob's Burgers",
         "position":  "Cook",
         "cash_app":  "$bob",
@@ -178,20 +233,45 @@
         "paypal":    "bob"
       },
       {
-        "photo": "",
+        "photo":     "",
         "thumbnail": "",
-        "name": "Joe",
-        "venue": "Joe's Crabshack",
-        "position": "Cook",
-        "cash_app": "$joe",
-        "venmo": "@joe",
-        "paypal": "joe"
+        "name":      "Joe",
+        "email":     "joe@example.com",
+        "venue":     "Joe's Crabshack",
+        "position":  "Cook",
+        "cash_app":  "$joe",
+        "venmo":     "@joe",
+        "paypal":    "joe"
+      }]; /* #} */
+    var moderation_results = /* {{ js_comment_end }} {{ moderation_results|tojson }} {{ js_comment }} {# */ [
+      {
+        "photo":     "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher.png",
+        "thumbnail": "https://gainesvilletips.org/wp-content/uploads/2020/03/bob-belcher-thumb.png",
+        "name":      "Bob Belcher",
+        "email":     "bob@example.com",
+        "venue":     "Bob's Burgers",
+        "position":  "Cook",
+        "cash_app":  "$bob",
+        "venmo":     "@bob",
+        "paypal":    "bob"
+      },
+      {
+        "photo":     "",
+        "thumbnail": "",
+        "name":      "Joe",
+        "email":     "joe@example.com",
+        "venue":     "Joe's Crabshack",
+        "position":  "Cook",
+        "cash_app":  "$joe",
+        "venmo":     "@joe",
+        "paypal":    "joe"
       }]; /* #} */
     var random_results = /* {{ js_comment_end }} {{ random_results|tojson }} {{ js_comment }} {# */ [
       {
         "photo":     "",
         "thumbnail": "",
         "name":      "Scooby Doo",
+        "email":     "scooby@example.com",
         "venue":     "The Van",
         "position":  "Cook",
         "cash_app":  "$scooby",
@@ -202,6 +282,7 @@
         "photo":     "",
         "thumbnail": "",
         "name":      "Kevin",
+        "email":     "kevin@example.com",
         "venue":     "Satchel's",
         "position":  "Promoter",
         "cash_app":  "$kevin",
@@ -212,6 +293,7 @@
         "photo":     "",
         "thumbnail": "",
         "name":      "Harry Dresden",
+        "email":     "dresden@example.com",
         "venue":     "McAnally's Pub",
         "position":  "Security",
         "cash_app":  "$harry",
@@ -222,6 +304,7 @@
         "photo":     "",
         "thumbnail": "",
         "name":      "Spongebob Squarepants",
+        "email":     "spongebob@example.com",
         "venue":     "Krusty Krab",
         "position":  "Cook",
         "cash_app":  "$sponge",
@@ -229,7 +312,11 @@
         "paypal":    "sponge"
       }];
       /* #} */
-    var datasets = [[results_table, search_results], [random_table, random_results]];
+    var datasets = [
+      [search_results_table, search_results],
+      [moderation_results_table, moderation_results],
+      [random_results_table, random_results]
+    ];
     for(var i=0; i<datasets.length; i++) {
       var dest = datasets[i][0];
       var data = datasets[i][1];
@@ -246,6 +333,11 @@
           first.querySelector('.photo').appendChild(img_link(record.photo, record.thumbnail));
         }
         first.querySelector('.name').innerText = record.name;
+        /* {{ end_js_comment }}
+        {% if is_moderating %} {{ js_comment }} */
+        first.querySelector('.email').innerText = record.email;
+        /* {{ end_js_comment }}
+        {% endif %} {{ js_comment }} */
         first.querySelector('.venue').innerText = record.venue;
         first.querySelector('.position').innerText = record.position;
         if(record.cash_app) {

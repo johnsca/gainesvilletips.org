@@ -4,6 +4,7 @@ import pickle
 import random
 from base64 import b64decode
 from datetime import datetime
+from operator import itemgetter
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from uuid import uuid4
@@ -40,29 +41,25 @@ admin_token = os.environ.get('ADMIN_TOKEN')
 @app.route('/', methods=['GET'])
 def index():
     is_added = 'added' in request.args
+    search = request.args.get('search', '')
     if is_added:
         search_results = _load_data(request.args['added'])
         random_results = []
         if not search_results:
             abort(404)
     else:
-        data = [record for record in _load_data() if record.moderated]
-        if 'search' in request.args:
-            search_results = process.extractBests(
-                request.args['search'],
-                data,
-                limit=None,
-                score_cutoff=60)
-            search_results = [result[0] for result in search_results]
-        else:
-            search_results = []
-        remaining = [item for item in data if item not in search_results]
+        data = _load_data()
+        search_results = sorted(_do_search(search, data) if search else [],
+                                key=itemgetter('name'))
+        remaining = [record for record in data
+                     if record.moderated and record not in search_results]
         random_results = random.sample(remaining, min(4, len(remaining)))
 
     return render_template('index.html', **{
         'search': request.args.get('search', ''),
         'is_added': is_added,
         'search_results': search_results,
+        'moderation_results': [],
         'random_results': random_results,
 
         # These are used to allow opening the template directly as HTML for
@@ -124,9 +121,13 @@ def add_server():
 @app.route('/moderate', methods=['GET', 'POST'])
 # @auth.login_required
 def moderate():
+    # total users
+    # email on moderation
+    # search on moderation
     if os.environ.get('USE_DYNAMODB', 'false').lower() != 'true':
         abort(404)
     request_token = request.args.get('token', '')
+    search = request.args.get('search', '')
     if not request_token or not admin_token or request_token != admin_token:
         abort(401)
     if request.method == 'POST':
@@ -144,14 +145,22 @@ def moderate():
                            Key={'id': {'S': record_id}})
         return redirect(url_for('moderate', token=request_token),
                         code=303)
-    data = [record for record in _load_data() if not record.moderated]
+    data = _load_data()
+    total_active = len([True for record in data if record.moderated])
+    search_results = sorted(_do_search(search, data) if search else [],
+                            key=itemgetter('name'))
+    moderation_results = sorted([record for record in data
+                                 if not record.moderated],
+                                key=itemgetter('name'))
     return render_template('index.html', **{
-        'search': '',
+        'search': search,
         'is_added': False,
         'is_moderating': True,
-        'search_results': data,
+        'search_results': search_results,
+        'moderation_results': moderation_results,
         'random_results': [],
         'request_token': request_token,
+        'total_active': total_active,
 
         # These are used to allow opening the template directly as HTML for
         # style editing with placeholder data but also do the right thing when
@@ -336,6 +345,14 @@ def _load_data(item_id=None):
         return _load_dynamodb_data(item_id)
     else:
         return _load_spreadsheet_data(item_id)
+
+
+def _do_search(search, data):
+    active = [record for record in data if record.moderated]
+    search_results = process.extractBests(search, active,
+                                          limit=None,
+                                          score_cutoff=60)
+    return [result[0] for result in search_results]
 
 
 def _load_dynamodb_data(item_id=None):
