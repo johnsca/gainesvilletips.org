@@ -347,8 +347,10 @@
           second.querySelector('.venmo').appendChild(link('https://venmo.com/' + record.venmo.replace('@', ''), record.venmo));
         }
         if(record.paypal) {
-          if(record.paypal.startsWith('https://') || record.paypal.toLowerCase().startsWith('paypal.me/')) {
+          if(record.paypal.startsWith('https://')) {
             third.querySelector('.paypal').appendChild(link(record.paypal, record.paypal));
+          } else if (record.paypal.toLowerCase().startsWith('paypal.me/')) {
+            third.querySelector('.paypal').appendChild(link('https://' + record.paypal, record.paypal));
           } else if (record.paypal.indexOf('@') >= 0) {
             var email_url = 'https://www.paypal.com/myaccount/transfer/homepage/external/summary?recipient=';
             third.querySelector('.paypal').appendChild(link(email_url + record.paypal, record.paypal));
