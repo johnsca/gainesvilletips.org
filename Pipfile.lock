@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "68b4da0dcb1efd8aec3593daa50377f17633c4a042f7d38021c084f60902e39b"
+            "sha256": "6b109e63af5892a574633f38d5d47753b24de3b3b7317a93841098eed6c192e7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -125,6 +125,7 @@
                 "sha256:016924388770b7e66c7e9ade1c4c3144ee88812d79697fd6c0dad9abdfcda2fd",
                 "sha256:01d686448f57d3bc027726474faa1aa650ba333bedb392e06938b0add8ec8d3a"
             ],
+            "index": "pypi",
             "version": "==1.12.0"
         },
         "google-auth-httplib2": {
@@ -241,6 +242,14 @@
                 "sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be"
             ],
             "version": "==1.1.1"
+        },
+        "oauthlib": {
+            "hashes": [
+                "sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889",
+                "sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea"
+            ],
+            "index": "pypi",
+            "version": "==3.1.0"
         },
         "parso": {
             "hashes": [

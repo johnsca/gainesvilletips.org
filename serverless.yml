@@ -3,19 +3,23 @@ service: gainesvilletips
 plugins:
   - serverless-python-requirements
   - serverless-wsgi
+  - serverless-apigw-binary
 
 custom:
   tableName: 'servers-table-${self:provider.stage}'
+  bucketName: 'images-gainevilletipsorg'
   wsgi:
     app: gainesvilletips_org.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: non-linux
+  apigwBinary:
+    types:           #list of mime-types
+      - 'multipart/form-data'
 
 provider:
   name: aws
   runtime: python3.8
-  stage: dev
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -27,18 +31,30 @@ provider:
         - dynamodb:DeleteItem
       Resource:
         - { "Fn::GetAtt": ["ServersDynamoDBTable", "Arn" ] }
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource: { "Fn::Join": ["", ["arn:aws:s3:::${self:custom.bucketName}", "/*" ] ] }
   environment:
     SERVERS_TABLE: ${self:custom.tableName}
+    IMAGES_BUCKET: ${self:custom.bucketName}
 
 functions:
   webapi:
-    handler: wsgi.handler
+    handler: wsgi_handler.handler
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http: 'ANY /'
+      - http:
+          method: ANY
+          path: '{proxy+}'
+          integration: lambda-proxy
+          request:
+            template:
+              multipart/form-data: '{ "content": "$input.body" }'
     environment:
       GOOGLE_TOKEN: ${ssm:/google.tokens.gainesvilletips.org~true}
       ADMIN_TOKEN: ${ssm:/site-admin.tokens.gainesvilletips.org~true}
+      USE_DYNAMODB: true
 
 resources:
   Resources:

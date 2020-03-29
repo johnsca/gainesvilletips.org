@@ -1,4 +1,3 @@
-import io
 import mimetypes
 import os
 import pickle
@@ -11,7 +10,7 @@ from uuid import uuid4
 
 import boto3
 from botocore.exceptions import ClientError
-from flask import abort, Flask, redirect, render_template, request
+from flask import abort, Flask, redirect, render_template, request, url_for
 from flask_httpauth import HTTPBasicAuth
 from fuzzywuzzy import process
 from googleapiclient.discovery import build
@@ -21,19 +20,21 @@ from PIL import Image
 
 
 app = Flask(__name__)
+app.debug = True
 auth = HTTPBasicAuth()
 db = boto3.client('dynamodb')
 s3 = boto3.client('s3')
 table = os.environ.get('SERVERS_TABLE', 'servers-table-dev')
-photo_bucket_name = 'images-gainevilletipsorg'
+photo_bucket_name = os.environ.get('IMAGES_BUCKET', 'images-gainevilletipsorg')
 photo_bucket_url = f'https://{photo_bucket_name}.s3.amazonaws.com/'
 thumbnail_size = (88, 88)
+admin_token = os.environ.get('ADMIN_TOKEN')
 
 
-@auth.verify_password
-def verify_auth(username, password):
-    admin_token = os.environ.get('ADMIN_TOKEN')
-    return admin_token and username == 'admin' and password == admin_token
+# @auth.verify_password
+# def verify_auth(username, password):
+#     admin_token = os.environ.get('ADMIN_TOKEN')
+#     return admin_token and username == 'admin' and password == admin_token
 
 
 @app.route('/', methods=['GET'])
@@ -99,11 +100,12 @@ def add_server():
         if record.photo:
             _save_form_photo(record)
             _upload_photo(record)
+            _cleanup_photos(record)
         try:
             db.put_item(TableName=table, Item=record.to_dynamodb())
         except ClientError as e:
             raise FormError('Failed to save record') from e
-        return redirect(f'/?added={record.id}', code=303)
+        return redirect(f'.?added={record.id}', code=303)
     except FormError as e:
         return render_template('form.html', **{
             'errors': e.errors,
@@ -120,10 +122,13 @@ def add_server():
 
 
 @app.route('/moderate', methods=['GET', 'POST'])
-@auth.login_required
+# @auth.login_required
 def moderate():
     if os.environ.get('USE_DYNAMODB', 'false').lower() != 'true':
         abort(404)
+    request_token = request.args.get('token', '')
+    if not request_token or not admin_token or request_token != admin_token:
+        abort(401)
     if request.method == 'POST':
         record_id = request.form.get('id')
         if request.form.get('accept') and record_id:
@@ -137,7 +142,8 @@ def moderate():
         elif request.form.get('delete') and record_id:
             db.delete_item(TableName=table,
                            Key={'id': {'S': record_id}})
-        return redirect(f'/moderate', code=303)
+        return redirect(url_for('moderate', token=request_token),
+                        code=303)
     data = [record for record in _load_data() if not record.moderated]
     return render_template('index.html', **{
         'search': '',
@@ -145,6 +151,7 @@ def moderate():
         'is_moderating': True,
         'search_results': data,
         'random_results': [],
+        'request_token': request_token,
 
         # These are used to allow opening the template directly as HTML for
         # style editing with placeholder data but also do the right thing when
@@ -157,16 +164,24 @@ def moderate():
 
 
 @app.route('/import')
-@auth.login_required
+# @auth.login_required
 def import_from_spreadsheet():
-    data = _load_spreadsheet_data()
+    request_token = request.args.get('token', '')
+    if not request_token or not admin_token or request_token != admin_token:
+        abort(401)
+    try:
+        data = _load_spreadsheet_data()
 
-    # TODO: Use batch_write_item to improve efficiency
-    for record in data:
-        if record._drive_file_id:
-            _save_drive_photo(record)
-            _upload_photo(record)
-        db.put_item(TableName=table, Item=record.to_dynamodb())
+        # TODO: Use batch_write_item to improve efficiency
+        for record in data:
+            if record._drive_file_id:
+                _save_drive_photo(record)
+                _upload_photo(record)
+                _cleanup_photos(record)
+            db.put_item(TableName=table, Item=record.to_dynamodb())
+    except Exception:
+        import traceback
+        return f'<pre>{traceback.format_exc()}</pre>', 500
     return 'Imported'
 
 
@@ -270,8 +285,9 @@ class Record(dict):
         self.paypal = request.form['paypal']
         photo_filename = _filename(request, 'photo')
         if photo_filename:
-            self.photo = f'{photo_bucket_url}{self.id}{self._suffix}'
-            self.thumbnail = f'{photo_bucket_url}{self.id}-thumb{self._suffix}'
+            suffix = Path(photo_filename).suffix
+            self.photo = f'{photo_bucket_url}{self.id}{suffix}'
+            self.thumbnail = f'{photo_bucket_url}{self.id}-thumb{suffix}'
         else:
             self.photo = ''
             self.thumbnail = ''
@@ -339,7 +355,8 @@ def _load_dynamodb_data(item_id=None):
 
 def _gapi(api_name, version):
     creds = pickle.loads(b64decode(os.environ['GOOGLE_TOKEN']))
-    service = build(api_name, version, credentials=creds)
+    service = build(api_name, version, credentials=creds,
+                    cache_discovery=False)
     return service
 
 
@@ -406,3 +423,8 @@ def _upload_photo(record):
         if app.debug:
             raise
         raise FormError('Unable to upload photo') from e
+
+
+def _cleanup_photos(record):
+    Path(f'/tmp/{record.photo_filename}').unlink(missing_ok=True)
+    Path(f'/tmp/{record.thumb_filename}').unlink(missing_ok=True)

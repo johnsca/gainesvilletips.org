@@ -1,10 +1,12 @@
 -i https://pypi.org/simple
-boto3==1.12.30
-botocore==1.15.30
+backcall==0.1.0
+boto3==1.12.31
+botocore==1.15.31
 cachetools==4.0.0
 certifi==2019.11.28
 chardet==3.0.4
 click==7.1.1
+decorator==4.4.2
 docutils==0.15.2
 flask-httpauth==3.3.0
 flask==1.1.1
@@ -16,14 +18,25 @@ google-auth==1.12.0
 googleapis-common-protos==1.51.0
 httplib2==0.17.0
 idna==2.9
+ipdb==0.13.2
+ipython-genutils==0.2.0
+ipython==7.13.0
 itsdangerous==1.1.0
+jedi==0.16.0
 jinja2==2.11.1
 jmespath==0.9.5
 markupsafe==1.1.1
+oauthlib==3.1.0
+parso==0.6.2
+pexpect==4.8.0 ; sys_platform != 'win32'
+pickleshare==0.7.5
 pillow==7.0.0
+prompt-toolkit==3.0.5
 protobuf==3.11.3
+ptyprocess==0.6.0
 pyasn1-modules==0.2.8
 pyasn1==0.4.8
+pygments==2.6.1
 python-dateutil==2.8.1
 python-levenshtein==0.12.0
 pytz==2019.3
@@ -31,6 +44,8 @@ requests==2.23.0
 rsa==4.0
 s3transfer==0.3.3
 six==1.14.0
+traitlets==4.3.3
 uritemplate==3.0.1
 urllib3==1.25.8 ; python_version != '3.4'
+wcwidth==0.1.9
 werkzeug==1.0.0

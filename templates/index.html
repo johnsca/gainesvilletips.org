@@ -58,7 +58,7 @@
         <!-- {{ html_comment_end }}
         {% if is_moderating %} {{ html_comment }} -->
           <td class="moderation" rowspan="3">
-            <form method="POST">
+            <form method="POST" action="?token={{ request_token|urlencode }}">
               <input class="id" type="hidden" name="id" value="" />
               <input class="accept" title="Accept" value="&check;" name="accept" type="submit" />
               <input class="delete" title="Delete" value="&times;" name="delete" type="submit" />
