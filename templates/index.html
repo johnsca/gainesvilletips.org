@@ -34,7 +34,8 @@
         text-align: center;
       }
       .moderation .accept,
-      .moderation .delete {
+      .moderation .delete,
+      .moderation .edit {
         display: block;
         border-radius: 4px;
         width: 45px;
@@ -53,6 +54,11 @@
         color: black;
         background-color: red;
       }
+      .moderation .edit {
+        border: 1px solid blue;
+        color: darkblue;
+        background-color: powderblue;
+      }
     </style>
     <template id="server-template">
       <tr class="first">
@@ -63,6 +69,7 @@
               <input class="id" type="hidden" name="id" value="" />
               <input class="accept" title="Accept" value="&check;" name="accept" type="submit" />
               <input class="delete" title="Delete" value="&times;" name="delete" type="submit" />
+              <input class="edit" title="Edit" value="&#x270E;" name="edit" type="submit" />
             </form>
           </td>
         <!-- {{ html_comment_end }}

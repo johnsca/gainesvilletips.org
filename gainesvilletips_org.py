@@ -47,6 +47,7 @@ def index():
         random_results = []
         if not search_results:
             abort(404)
+        search_results[0].thumbnail += f'?force-refresh={datetime.now()}'
     else:
         data = _load_data()
         search_results = sorted(_do_search(search, data) if search else [],
@@ -94,7 +95,7 @@ def add_server():
         if os.environ.get('USE_DYNAMODB', 'false').lower() != 'true':
             raise FormError('Cannot update spreadsheet')
         record = Record.from_request(request)
-        if record.photo:
+        if _filename(request, 'photo'):
             _save_form_photo(record)
             _upload_photo(record)
             _cleanup_photos(record)
@@ -121,15 +122,11 @@ def add_server():
 @app.route('/moderate', methods=['GET', 'POST'])
 # @auth.login_required
 def moderate():
-    # total users
-    # email on moderation
-    # search on moderation
     if os.environ.get('USE_DYNAMODB', 'false').lower() != 'true':
         abort(404)
+    _verify_token()
     request_token = request.args.get('token', '')
     search = request.args.get('search', '')
-    if not request_token or not admin_token or request_token != admin_token:
-        abort(401)
     if request.method == 'POST':
         record_id = request.form.get('id')
         if request.form.get('accept') and record_id:
@@ -143,6 +140,25 @@ def moderate():
         elif request.form.get('delete') and record_id:
             db.delete_item(TableName=table,
                            Key={'id': {'S': record_id}})
+        elif request.form.get('edit') and record_id:
+            record = _load_data(record_id)
+            if not record:
+                abort(404)
+            record = record[0]
+            return render_template('form.html', **{
+                'error': '',
+                'form': record,
+                'record_id': record.id,
+                'request_token': request_token,
+
+                # These are used to allow opening the template directly as HTML
+                # for style editing with placeholder data but also do the right
+                # thing when the template is rendered.
+                'html_comment': Markup('<!--'),
+                'html_comment_end': Markup('-->'),
+                'js_comment': Markup('/*'),
+                'js_comment_end': Markup('*/'),
+            })
         return redirect(url_for('moderate',
                                 token=request_token,
                                 search=search),
@@ -177,9 +193,7 @@ def moderate():
 @app.route('/import')
 # @auth.login_required
 def import_from_spreadsheet():
-    request_token = request.args.get('token', '')
-    if not request_token or not admin_token or request_token != admin_token:
-        abort(401)
+    _verify_token()
     try:
         data = _load_spreadsheet_data()
 
@@ -283,10 +297,18 @@ class Record(dict):
     @classmethod
     def from_request(cls, request):
         cls._validate_request(request)
-        self = cls()
-        self.id = str(uuid4())
-        self.moderated = False
-        self.timestamp = datetime.now().isoformat()
+        record_id = request.form.get('record_id')
+        if record_id:
+            _verify_token()
+            self = _load_data(record_id)
+            if not self:
+                abort(404)
+            self = self[0]
+        else:
+            self = cls()
+            self.id = str(uuid4())
+            self.moderated = False
+            self.timestamp = datetime.now().isoformat()
         self.name = request.form['name']
         self.email = request.form['email']
         self.venue = request.form['venue']
@@ -299,9 +321,6 @@ class Record(dict):
             suffix = Path(photo_filename).suffix
             self.photo = f'{photo_bucket_url}{self.id}{suffix}'
             self.thumbnail = f'{photo_bucket_url}{self.id}-thumb{suffix}'
-        else:
-            self.photo = ''
-            self.thumbnail = ''
         return self
 
     @classmethod
@@ -447,3 +466,9 @@ def _upload_photo(record):
 def _cleanup_photos(record):
     Path(f'/tmp/{record.photo_filename}').unlink()
     Path(f'/tmp/{record.thumb_filename}').unlink()
+
+
+def _verify_token():
+    request_token = request.args.get('token', request.form.get('token', ''))
+    if not request_token or not admin_token or request_token != admin_token:
+        abort(401)
