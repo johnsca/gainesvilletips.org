@@ -171,7 +171,7 @@ def moderate():
     moderation_results = sorted([record for record in data
                                  if not record.moderated],
                                 key=itemgetter('name'))
-    return render_template('index.html', **{
+    return render_template('moderate.html', **{
         'search': search,
         'is_added': False,
         'is_moderating': True,
