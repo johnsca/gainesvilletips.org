@@ -288,7 +288,7 @@ class Record(dict):
         photo_filename = _filename(request, 'photo')
         if photo_filename:
             suffix = Path(photo_filename).suffix
-            if suffix not in cls.allowed_image_exts:
+            if suffix.lower() not in cls.allowed_image_exts:
                 errors.append(f'Unsupported photo format: {suffix}')
         # TODO: Check for dupes
         if errors:
