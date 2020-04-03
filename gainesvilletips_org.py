@@ -1,3 +1,4 @@
+import functools
 import mimetypes
 import os
 import pickle
@@ -442,6 +443,7 @@ def _upload_photo(record):
     thumb_tmp_file = f'/tmp/{record.thumb_filename}'
     try:
         thumb = Image.open(photo_tmp_file)
+        thumb = _fix_exif_transpose(thumb)
         thumb.thumbnail(thumbnail_size)
         thumb.save(thumb_tmp_file)
     except Exception as e:
@@ -472,3 +474,34 @@ def _verify_token():
     request_token = request.args.get('token', request.form.get('token', ''))
     if not request_token or not admin_token or request_token != admin_token:
         abort(401)
+
+
+# from: https://stackoverflow.com/questions/4228530/pil-thumbnail-is-rotating-my-image/30462851#30462851  # noqa
+def _fix_exif_transpose(image):
+    """
+        Apply Image.transpose to ensure 0th row of pixels is at the visual
+        top of the image, and 0th column is the visual left-hand side.
+        Return the original image if unable to determine the orientation.
+
+        As per CIPA DC-008-2012, the orientation field contains an integer,
+        1 through 8. Other values are reserved.
+    """
+
+    exif_orientation_tag = 0x0112
+    exif_transpose_sequences = [                   # Val  0th row  0th col
+        [],                                        # 0     (reserved)
+        [],                                        # 1    top      left
+        [Image.FLIP_LEFT_RIGHT],                   # 2    top      right
+        [Image.ROTATE_180],                        # 3    bottom   right
+        [Image.FLIP_TOP_BOTTOM],                   # 4    bottom   left
+        [Image.FLIP_LEFT_RIGHT, Image.ROTATE_90],  # 5    left     top
+        [Image.ROTATE_270],                        # 6    right    top
+        [Image.FLIP_TOP_BOTTOM, Image.ROTATE_90],  # 7    right    bottom
+        [Image.ROTATE_90],                         # 8    left     bottom
+    ]
+
+    exif = getattr(image, '_getexif', lambda: None)()
+    if not exif:
+        return image
+    seq = exif_transpose_sequences[exif[exif_orientation_tag]]
+    return functools.reduce(type(image).transpose, seq, image)
