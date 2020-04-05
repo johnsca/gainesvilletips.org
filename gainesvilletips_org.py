@@ -67,6 +67,14 @@ def index():
     return render_template('index.html', **{
         'search': request.args.get('search', ''),
         'records': records,
+
+        # These are used to allow opening the template directly as HTML for
+        # style editing with placeholder data but also do the right thing when
+        # the template is rendered.
+        'html_comment': Markup('<!--'),
+        'html_comment_end': Markup('-->'),
+        'js_comment': Markup('/*'),
+        'js_comment_end': Markup('*/'),
     })
 
 
