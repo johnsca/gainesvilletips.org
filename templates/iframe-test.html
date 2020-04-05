@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <style>
+    body {
+      text-align: center;
+    }
+  </style>
+  <script>
+    window.addEventListener("message", event => {
+      if('scrollHeight' in event.data) {
+        var newHeight = (event.data.scrollHeight + 20) + 'px';
+	document.querySelector("iframe").style.height = newHeight;
+      }
+    });
+  </script>
+  <body>
+    <!-- {{ html_comment_end }}
+    <iframe src="/" width="1058" height="auto" scrolling="yes" frameborder="0"></iframe>
+    {{ html_comment }} -->
+    <!-- {# -->
+    <iframe src="index.html" width="1058" height="auto" scrolling="yes" frameborder="0"></iframe>
+    <!-- #} -->
+  </body>
+</html>
