@@ -101,9 +101,9 @@
           var payment = result.querySelector('.payment');
           for(var method in payment_methods) {
             if(method in record) {
-              var link = document.createElement('a');
               var url = payment_methods[method](record);
               if(url) {
+                var link = document.createElement('a');
                 link.className = method;
                 link.href = url;
                 link.target = '_blank';
@@ -120,10 +120,14 @@
 
       var payment_methods = {
         'cash_app': (record) => {
-          return 'https://cash.app/' + record.cash_app;
+          if(record.cash_app) {
+            return 'https://cash.app/' + record.cash_app;
+          }
         },
         'venmo': (record) => {
-          return 'https://venmo.com/' + record.venmo.replace('@', '');
+          if(record.venmo) {
+            return 'https://venmo.com/' + record.venmo.replace('@', '');
+          }
         },
         'paypal': (record) => {
           if(record.paypal.startsWith('https://')) {
