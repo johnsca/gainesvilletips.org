@@ -39,6 +39,9 @@
         border-radius: 4px;
         border-width: 0;
       }
+      #results .no-results {
+        margin-top: 1em;
+      }
       #results.card-deck {
         justify-content: space-between;
       }
@@ -73,6 +76,13 @@
       window.addEventListener('DOMContentLoaded', (event) => {
         var results = document.querySelector('#results');
         var template = document.querySelector('#results template');
+        if(records.length == 0) {
+          var no_results = document.createElement('h1');
+          no_results.className = 'no-results';
+          no_results.innerText = "We're sorry, but we weren't able to find who you were looking for.";
+          results.appendChild(no_results);
+          return;
+        }
         for(var record of records) {
           var result = document.importNode(template.content, true);
           if(record.photo) {
@@ -83,7 +93,7 @@
             var photo = result.querySelector('.photo');
             var thumb = result.querySelector('.thumb');
             card_img.replaceChild(thumb, photo);
-            thumb.src = 'https://gainesvilletips.org/wp-content/uploads/2020/04/no-photo.png';
+            thumb.src = 'https://gainesvilletips.org/wp-content/uploads/2020/04/img-place-holder-09.png';
           }
           result.querySelector('.name').innerText = record.name;
           result.querySelector('.establishment').innerText = record.venue;
