@@ -8,8 +8,7 @@ verify_ssl = true
 [packages]
 google-api-python-client = "*"
 jinja2 = "*"
-fuzzywuzzy = "*"
-python-levenshtein = "*"
+rapidfuzz = "*"
 flask = "*"
 boto3 = "*"
 flask-httpauth = "*"

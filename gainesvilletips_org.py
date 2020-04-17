@@ -14,7 +14,7 @@ import boto3
 from botocore.exceptions import ClientError
 from flask import abort, Flask, redirect, render_template, request, url_for
 from flask_httpauth import HTTPBasicAuth
-from fuzzywuzzy import process
+from rapidfuzz import process
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from jinja2 import Markup
