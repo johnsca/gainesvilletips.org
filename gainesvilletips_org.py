@@ -39,30 +39,34 @@ admin_token = os.environ.get('ADMIN_TOKEN')
 #     return admin_token and username == 'admin' and password == admin_token
 
 
+@app.route('/_', methods=['GET'])
+def _iframe_test():
+    return render_template('iframe-test.html', **{
+        # These are used to allow opening the template directly as HTML for
+        # style editing with placeholder data but also do the right thing when
+        # the template is rendered.
+        'html_comment': Markup('<!--'),
+        'html_comment_end': Markup('-->'),
+        'js_comment': Markup('/*'),
+        'js_comment_end': Markup('*/'),
+    })
+
+
 @app.route('/', methods=['GET'])
 def index():
-    is_added = 'added' in request.args
     search = request.args.get('search', '')
-    if is_added:
-        search_results = _load_data(request.args['added'])
-        random_results = []
-        if not search_results:
-            abort(404)
-        search_results[0].thumbnail += f'?force-refresh={datetime.now()}'
+    data = _load_data()
+    for record in data:
+        record.pop('email', None)
+    if search:
+        records = sorted(_do_search(search, data) if search else [],
+                         key=itemgetter('name'))
     else:
-        data = _load_data()
-        search_results = sorted(_do_search(search, data) if search else [],
-                                key=itemgetter('name'))
-        remaining = [record for record in data
-                     if record.moderated and record not in search_results]
-        random_results = random.sample(remaining, min(4, len(remaining)))
+        records = random.sample(data, min(4, len(data)))
 
     return render_template('index.html', **{
         'search': request.args.get('search', ''),
-        'is_added': is_added,
-        'search_results': search_results,
-        'moderation_results': [],
-        'random_results': random_results,
+        'records': records,
 
         # These are used to allow opening the template directly as HTML for
         # style editing with placeholder data but also do the right thing when
@@ -171,7 +175,7 @@ def moderate():
     moderation_results = sorted([record for record in data
                                  if not record.moderated],
                                 key=itemgetter('name'))
-    return render_template('index.html', **{
+    return render_template('moderate.html', **{
         'search': search,
         'is_added': False,
         'is_moderating': True,
